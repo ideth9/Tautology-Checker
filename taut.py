@@ -77,6 +77,7 @@ class Parser:
         This is the lowest precedence, so it's called first. 
         """
         left = self.parse_implies()
+
         while self.current_token() == '=':
             operator = self.consume('=')
             right = self.parse_implies()
@@ -89,6 +90,7 @@ class Parser:
         Parses implication expressions (>).
         """
         left = self.parse_or()
+        
         while self.current_token() == '>':
             operator = self.consume('>')
             right = self.parse_or()
@@ -101,6 +103,7 @@ class Parser:
         Parses OR expressions (|).
         """
         left = self.parse_and()
+
         while self.current_token() == '|':
             operator = self.consume('|')
             right = self.parse_and()
@@ -113,6 +116,7 @@ class Parser:
         Parses AND expressions (^).
         """
         left = self.parse_not()
+
         while self.current_token() == '^':
             operator = self.consume('^')
             right = self.parse_not()
@@ -128,6 +132,7 @@ class Parser:
         if self.current_token() == '~':
             operator = self.consume('~')
             operand = self.parse_not()
+
             return Node(operator, operand, None)
 
         else:
@@ -143,10 +148,12 @@ class Parser:
             self.consume('(')
             expr = self.parse_expression()
             self.consume(')')
+
             return expr
 
         elif self.current_token().isalpha():
             var_name = self.consume()
+
             return Node(var_name, None, None)
 
         else:
@@ -164,11 +171,15 @@ class Parser:
                 raise ValueError("Unexpected end of tokens")
             value = self.current_token()
             self.current_index += 1
+
             return value
+        
         elif self.current_token() == expected_token:
             value = self.current_token()
             self.current_index += 1
+
             return value 
+        
         else:
             raise ValueError(f"Expected {expected_token} but got {self.current_token()}")
     
@@ -179,7 +190,40 @@ class Parser:
         """
         if self.current_index < len(self.tokens):
             return self.tokens[self.current_index]
+        
         return None
+
+
+def extract_variables(node):
+    """
+    Finds all unique variables in an expression tree.
+    Goes through the tree recursively and collects all variable names
+    and returns a set of variable names.
+    """
+    variables = set()
+
+    if node is None:
+        return variables
+
+    # If this is a leaf node (both children are None), it's a variable
+    if node.left is None and node.right is None:
+        if node.value not in ['~', '^', '|', '>', '=']:
+            variables.add(node.value)
+
+    # Otherwise, it's an operator, so recursively check children
+    else:
+        # check left child
+        if node.left is not None:
+            left_v = extract_variables(node.left)
+            variables.update(left_v)
+
+        # check right child
+        if node.right is not None:
+            right_v = extract_variables(node.right)
+            variables.update(right_v)
+
+    # return
+    return variables
 
 
 def print_tree(node, indent=""):
@@ -197,7 +241,7 @@ def print_tree(node, indent=""):
     if node.left is not None:
         print_tree(node.left, indent + "   ")
 
-
+# tests for parser and extract provided by Cursor AI
 def test_parser():
     """
     Runs test cases to make sure the parser works.
@@ -243,6 +287,52 @@ def test_parser():
         print()
 
 
+def test_extract_variables():
+    """
+    Runs test cases to verify variable extraction works.
+    
+    Tests that we can correctly identify all unique variables
+    from different expression trees.
+    """
+    test_cases = [
+        ("P ^ Q", ["P", "Q"], "Simple AND"),
+        ("P | Q | R", ["P", "Q", "R"], "Multiple OR"),
+        ("P", ["P"], "Single variable"),
+        ("~P", ["P"], "NOT with one variable"),
+        ("P ^ Q | ~R", ["P", "Q", "R"], "Complex expression"),
+        ("(P | Q) ^ R", ["P", "Q", "R"], "With parentheses"),
+        ("P = Q", ["P", "Q"], "Biconditional"),
+        ("P ^ P", ["P"], "Repeated variable"),
+    ]
+    
+    print("=" * 60)
+    print("VARIABLE EXTRACTION TESTING")
+    print("=" * 60)
+    print()
+    
+    for expression, expected_vars, description in test_cases:
+        print(f"Test: {description}")
+        print(f"Expression: {expression}")
+        
+        try:
+            tokens = tokenize(expression)
+            parser = Parser(tokens)
+            tree = parser.parse()
+            variables = extract_variables(tree)
+            variables_list = sorted(list(variables))  # Convert set to sorted list for comparison
+            
+            expected_sorted = sorted(expected_vars)
+            if variables_list == expected_sorted:
+                print(f"✓ Found variables: {variables_list}")
+            else:
+                print(f"✗ Expected: {expected_sorted}, Got: {variables_list}")
+        except Exception as e:
+            print(f"✗ Error: {e}")
+        
+        print("-" * 60)
+        print()
+
+
 if __name__ == '__main__':
     # Test tokenizer
     print("=" * 60)
@@ -269,4 +359,7 @@ if __name__ == '__main__':
     # Test parser (once implemented)
     # Uncomment the line below when you're ready to test the parser
     test_parser()
+    
+    # Test variable extraction
+    test_extract_variables()
 
