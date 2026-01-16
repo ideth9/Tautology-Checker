@@ -226,6 +226,47 @@ def extract_variables(node):
     return variables
 
 
+def generate_truth_assignments(variables):
+    """
+    Generates all possible truth value assignments for each variable.
+    For n variables, there are 2^n possible combinations of True/False.
+    Returns a list of dictionaries. Each dictionary maps variable names
+    to their truth values for one combination.
+    """
+    # convert set into list
+    var_list = list(variables)
+
+    #sort list
+    var_list.sort()
+
+    num_vars = len(var_list)
+
+    # Calculate how many combinations we need
+    # 2**n
+    num_combinations = 2**num_vars
+    assign1 = []
+
+    # for loop between 0 to num. of combinations
+    # range() takes one less, no need to subtract 1
+    for i in range(num_combinations):
+        assign2 = {}
+
+        # Determine the truth value for eaech variable
+        for j in range(num_vars):
+            var_name = var_list[j]
+
+            bit_value = (i>>j) & 1
+
+            if bit_value == 1:
+                assign2[var_name] = True
+
+            else:
+                assign2[var_name] = False
+
+        assign1.append(assign2)
+
+    return assign1  
+
 def print_tree(node, indent=""):
     """
     Prints out the tree structure.
@@ -244,31 +285,34 @@ def print_tree(node, indent=""):
 
 if __name__ == '__main__':
     # Test tokenizer
-    print("=" * 60)
-    print("TOKENIZER TESTING")
-    print("=" * 60)
-    print()
+    #print("=" * 60)
+    #print("TOKENIZER TESTING")
+    #print("=" * 60)
+    #print()
     
     expr1 = 'P ^ Q'
     expr2 = 'VAR ^ PROPOSITION'
     expr3 = '(P | Q) > R'
     
-    print("Test 1:", expr1)
-    tokenize(expr1)
+    #print("Test 1:", expr1)
+    #tokenize(expr1)
     
-    print("\nTest 2:", expr2)
-    tokenize(expr2)
+    #print("\nTest 2:", expr2)
+    #tokenize(expr2)
     
-    print("\nTest 3:", expr3)
-    tokenize(expr3)
+    #print("\nTest 3:", expr3)
+    #tokenize(expr3)
     
-    print("\n" + "=" * 60)
-    print()
+    #print("\n" + "=" * 60)
+    #print()
     
     # Test parser (once implemented)
     # Uncomment the line below when you're ready to test the parser
-    test_parser()
+    #test_parser()
     
     # Test variable extraction
-    test_extract_variables()
+    #test_extract_variables()
+
+    # Test generate assignments
+    test_generate_assignments()
 

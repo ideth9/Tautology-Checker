@@ -1,4 +1,4 @@
-from taut import tokenize, Parser, print_tree, extract_variables
+from taut import tokenize, Parser, print_tree, extract_variables, generate_truth_assignments
 
 # tests for parser and extract provided by Cursor AI
 def test_parser():
@@ -85,6 +85,47 @@ def test_extract_variables():
                 print(f"✓ Found variables: {variables_list}")
             else:
                 print(f"✗ Expected: {expected_sorted}, Got: {variables_list}")
+        except Exception as e:
+            print(f"✗ Error: {e}")
+        
+        print("-" * 60)
+        print()
+
+
+def test_generate_assignments():
+    """
+    Runs test cases to verify truth assignment generation works.
+    
+    Tests that we correctly generate all 2^n combinations for different
+    numbers of variables.
+    """
+    test_cases = [
+        (['P'], 2, "Single variable - should have 2 combinations"),
+        (['P', 'Q'], 4, "Two variables - should have 4 combinations"),
+        (['P', 'Q', 'R'], 8, "Three variables - should have 8 combinations"),
+        (['A'], 2, "Single variable A"),
+    ]
+    
+    print("=" * 60)
+    print("TRUTH ASSIGNMENT GENERATION TESTING")
+    print("=" * 60)
+    print()
+    
+    for variables, expected_count, description in test_cases:
+        print(f"Test: {description}")
+        print(f"Variables: {variables}")
+        
+        try:
+            assignments = generate_truth_assignments(set(variables))
+            print(f"Generated {len(assignments)} assignments:")
+            
+            for i, assignment in enumerate(assignments, 1):
+                print(f"  {i}. {assignment}")
+            
+            if len(assignments) == expected_count:
+                print(f"✓ Correct number of assignments: {len(assignments)}")
+            else:
+                print(f"✗ Expected {expected_count}, got {len(assignments)}")
         except Exception as e:
             print(f"✗ Error: {e}")
         
